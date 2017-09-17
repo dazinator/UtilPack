@@ -1,0 +1,189 @@
+﻿<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" InitialTargets="Message">
+
+  <PropertyGroup>
+    <DnnVsProjectSystemPlatformSuffix Condition="'$(DnnVsProjectSystemPlatformSuffix)' == '' and '$(MSBuildRuntimeType)' == 'Core' ">netcoreapp2.0</DnnVsProjectSystemPlatformSuffix>
+    <DnnVsProjectSystemPlatformSuffix Condition="'$(DnnVsProjectSystemPlatformSuffix)' == ''">net461</DnnVsProjectSystemPlatformSuffix>
+    <ThisVersion>0.0.1-alpha0001</ThisVersion>
+  </PropertyGroup>
+
+  <Target Name="Message">
+    <Message Text="Repro targets initialised." Importance="high"/>
+  </Target>
+
+
+  <UsingTask
+    Condition=" '$(UtilPackNuGetMSBuildAssemblyPath)' != '' "
+    TaskFactory="UtilPack.NuGet.MSBuild.NuGetTaskRunnerFactory"
+    AssemblyFile="$(UtilPackNuGetMSBuildAssemblyPath)"
+    TaskName="Repro.Task.Tasks.FindDnnManifestFile">
+    <Task>
+      <NuGetTaskInfo>
+        <!-- This element is mandatory, and should be the package ID of the package containing MSBuild task to be executed. -->
+        <PackageID>Repro.Task</PackageID>
+
+        <!-- Optionally specify the version. By default, newest will be used. Note that leaving this out will cause NuGet restore to always scan all sources. -->
+
+        <PackageVersion>$(ThisVersion)</PackageVersion>
+        <!--<AssemblyPath>lib/$(DnnVsProjectSystemPlatformSuffix)/DnnVsProjectSystem.BuildTools.dll</AssemblyPath>-->
+        <TaskName>Repro.Task.Tasks.FindDnnManifestFile</TaskName>
+        <!-- Optionally specify the assembly path of the task DLL -->
+
+        <!--<AssemblyPath>lib/netstandard1.3/X.Y.dll</AssemblyPath>-->
+
+        <!-- Optionally specify NuGet configuration file -->
+
+        <!-- <NuGetConfigurationFile>path/to/nuget.config</NuGetConfigurationFile> -->
+
+        <!-- Optionally specify the full type name of the task class. By default, the value of TaskName attribute of UsingTask element will be used. -->
+
+        <!-- <TaskName>Some.Other.Class</TaskName> -->
+
+        <!-- Optionally specify the NuGet framework which will act as framework of current process. The NuGet package matches are done against this framework. -->
+
+        <!-- <NuGetFramework>netcoreapp1.1</NuGetFramework> -->
+
+        <!-- In .NET Core, or other package-oriented framework, you can specify the platform NuGet package information as well, if automatic detection fails. -->
+
+        <!-- <NuGetFrameworkPackageID>Microsoft.NETCore.App</NuGetFrameworkPackageID> -->
+
+        <!-- <NuGetFrameworkPackageVersion>1.1.2</NuGetFrameworkPackageVersion> -->
+
+
+      </NuGetTaskInfo>
+    </Task>
+  </UsingTask>
+
+
+  <UsingTask
+ Condition=" '$(UtilPackNuGetMSBuildAssemblyPath)' != '' "
+ TaskFactory="UtilPack.NuGet.MSBuild.NuGetTaskRunnerFactory"
+ AssemblyFile="$(UtilPackNuGetMSBuildAssemblyPath)"
+ TaskName="Repro.Task.Tasks.CleanUp">
+    <Task>
+      <NuGetTaskInfo>
+        <PackageID>Repro.Task</PackageID>
+        <PackageVersion>$(ThisVersion)</PackageVersion>
+      </NuGetTaskInfo>
+    </Task>
+  </UsingTask>
+
+  <UsingTask
+ Condition=" '$(UtilPackNuGetMSBuildAssemblyPath)' != '' "
+ TaskFactory="UtilPack.NuGet.MSBuild.NuGetTaskRunnerFactory"
+ AssemblyFile="$(UtilPackNuGetMSBuildAssemblyPath)"
+ TaskName="Repro.Task.Tasks.DeployExtensionPackage">
+    <Task>
+      <NuGetTaskInfo>
+        <PackageID>Repro.Task</PackageID>
+        <PackageVersion>$(ThisVersion)</PackageVersion>
+      </NuGetTaskInfo>
+    </Task>
+  </UsingTask>
+
+  <!-- Hook into the PreBuild, AfterBuild, and AfterClean -->
+  <PropertyGroup>
+    <BuildDependsOn>
+      VsProjectPreBuild;
+      $(BuildDependsOn);
+    </BuildDependsOn>
+    <CleanDependsOn>
+      $(CleanDependsOn);
+      VsProjectCleanUp
+    </CleanDependsOn>
+
+    <ContentFilesProjectOutputGroupDependsOn>$(ContentFilesProjectOutputGroupDependsOn);VsProjectPreBuild</ContentFilesProjectOutputGroupDependsOn>
+
+  </PropertyGroup>
+
+  <!--
+  Configuration properties - you can override these from the command line
+  -->
+  <PropertyGroup>
+    <RunBuildTools Condition=" '$(RunBuildTools)'=='' ">true</RunBuildTools>
+
+    <SomeManifestFileName Condition="'$(SomeManifestFileName)' == ''">manifest</SomeManifestFileName>
+    <SomeManifestFileExtension Condition="'$(SomeManifestFileExtension)' == ''">dnn</SomeManifestFileExtension>
+
+    <InstallZipFileSuffix Condition="'$(InstallZipFileSuffix)' == ''">_Install</InstallZipFileSuffix>
+
+    <DefaultManifestVersion Condition="'$(DefaultManifestVersion)' == ''">0.0.1</DefaultManifestVersion>
+    <ManifestVersion Condition="'$(ManifestVersion)' == ''">$(DefaultManifestVersion)</ManifestVersion>
+    <ManifestProperties>$(ManifestProperties);Authors=$(Authors);PackageProjectUrl=$(PackageProjectUrl);TargetAssemblyName=$([System.IO.Path]::GetFileName('$(TargetPath)'))</ManifestProperties>
+
+  </PropertyGroup>
+
+  <!--
+  Include the manifest file located anywhere in the project. 
+  Also include the build configuration specific manifest file anywhere in the project.
+  -->
+  <ItemGroup>
+
+    <!--Default manifest files -->
+    <SomeManifestFileItems Include="**/$(SomeManifestFileName).$(Configuration).$(SomeManifestFileExtension)" Exclude="$(IntermediateOutputPath)**/*"/>
+    <SomeManifestFileItems Include="**/$(SomeManifestFileName).$(SomeManifestFileExtension)" Exclude="$(IntermediateOutputPath)**/*" />
+
+  </ItemGroup>
+
+  <!--
+  Pre-Build - Resolve the manifest to use, and resolve what the output zip file will be. Add the output zip file to the FileWrites list so it is included in a Clean.
+  -->
+  <Target Name="VsProjectPreBuild" Condition="$(RunBuildTools)" DependsOnTargets="PrintVariables">
+
+
+    <Repro.Task.Tasks.FindDnnManifestFile
+      ProjectDirectory="$(MSBuildProjectDirectory)"
+      ManifestFileProjectItems="@(SomeManifestFileItems)"
+      Configuration="$(Configuration)"
+      IntermediateOutputPath="$(IntermediateOutputPath)">
+      <Output TaskParameter="ManifestFileItemsForPackage" ItemName="SelectedManifestFileItemsForPackage"/>
+      <Output TaskParameter="DefaultManifestFileItemForPackage" ItemName="SelectedDefaultManifestFileItemForPackage"/>
+    </Repro.Task.Tasks.FindDnnManifestFile>
+
+    <Message Text="Found the following manifest files for install package: @(SelectedManifestFileItemsForPackage)" Importance="high"/>
+
+    <!--Formulate the zip package name that we will produce. -->
+    <PropertyGroup>
+      <InstallationZipFileName Condition="'$(InstallationZipFileName)' == ''">$(ProjectName)_$(ManifestVersion)$(InstallZipFileSuffix).zip</InstallationZipFileName>
+    </PropertyGroup>
+
+    <!--The zip package item that will be produced. -->
+    <ItemGroup>
+      <OutputInstallPackage Include="$(OutDir)$(InstallationZipFileName)"/>
+    </ItemGroup>
+
+    <!--Add the zip package item tot he filewrites list so that it will be cleaned from the output directory when we do a clean. -->
+    <ItemGroup>
+      <FileWrites Include="@(OutputInstallPackage)"/>
+    </ItemGroup>
+
+    <!--Include the zip file in the content project output group-->
+    <ItemGroup>
+      <ContentFilesProjectOutputGroupOutput Include="@(OutputInstallPackage->'%(FullPath)')" />
+    </ItemGroup>
+
+  </Target>
+
+
+
+  <!-- 
+  Prints out some info useful when debugging.
+  -->
+  <Target Name="PrintVariables">
+    <Message Text="Repro: Targets file is located at: $(MSBuildThisFileDirectory)" Importance="normal"/>
+  </Target>
+
+  <!-- 
+  Cleans up.
+  -->
+  <Target Name="VsProjectCleanUp">
+
+    <Message Text="Repro: Cleaning up because we are a good citizen.." Importance="high"/>
+    <Repro.Task.Tasks.CleanUp
+      OutputDirectory="$(OutDir)"
+      ProjectDirectory="$(MSBuildProjectDirectory)"
+      IntermediateOutputPath="$(IntermediateOutputPath)">
+    </Repro.Task.Tasks.CleanUp>
+
+  </Target>
+
+</Project>

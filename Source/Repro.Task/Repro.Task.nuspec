@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<package xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd" minClientVersion="2.5">
+    <id>Repro.Task</id>
+    <version>$version$</version>
+    <title>Repro tasks</title>
+    <authors>Darrell Tunnell</authors>
+    <summary>Tasks for repro.</summary>
+    <description>Contains tasks to help reproduce an issue</description>
+    <language>en-GB</language>
+    <projectUrl>https://github.com/dazinator/DnnVsProjectSystem</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <developmentDependency>true</developmentDependency>      
+    <tags>Rero UtilPack</tags>
+    <releaseNotes>      
+    </releaseNotes>
+    <dependencies>
+      <group>
+        <dependency id="UtilPack.NuGet.MSBuild" version="1.1.2" />
+      </group>   
+    </dependencies>
+  </metadata>
+  <files>   
+   
+    <file src="build\*.targets" target="build" />   
+   
+    <!--Place assemblies under /build-->
+    <file src="bin\$Configuration$\net452\*.dll" target="build\net452" />
+    <file src="bin\$Configuration$\net461\*.dll" target="build\net461" />
+    <file src="bin\$Configuration$\netcoreapp1.0\*.dll" target="build\netcoreapp1.0" />
+    <file src="bin\$Configuration$\netcoreapp2.0\*.dll" target="build\netcoreapp2.0" />
+    <file src="bin\$Configuration$\netstandard1.5\*.dll" target="build\netstandard1.5" />
+
+    <!--Place assemblies under /lib-->
+    <file src="bin\$Configuration$\net452\*.dll" target="lib\net452" />
+    <file src="bin\$Configuration$\net461\*.dll" target="lib\net461" />
+    <file src="bin\$Configuration$\netcoreapp1.0\*.dll" target="lib\netcoreapp1.0" />
+    <file src="bin\$Configuration$\netcoreapp2.0\*.dll" target="lib\netcoreapp2.0" />
+    <file src="bin\$Configuration$\netstandard1.5\*.dll" target="lib\netstandard1.5" />
+
+    <!--Place assemblies under /tools-->
+    <file src="bin\$Configuration$\net452\*.dll" target="tools\net452" />
+    <file src="bin\$Configuration$\net461\*.dll" target="tools\net461" />
+    <file src="bin\$Configuration$\netcoreapp1.0\*.dll" target="tools\netcoreapp1.0" />
+    <file src="bin\$Configuration$\netcoreapp2.0\*.dll" target="tools\netcoreapp2.0" />
+    <file src="bin\$Configuration$\netstandard1.5\*.dll" target="tools\netstandard1.5" />
+    
+  </files> 
+</package>

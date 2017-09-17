@@ -1,0 +1,92 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net461;net452;netstandard1.5;netcoreapp1.0;netcoreapp2.0</TargetFrameworks>
+    <OutputType>Library</OutputType>
+    <!--Nuspec Metadata-->
+    <Description>Repro build tasks.</Description>
+    <Authors>Darrell Tunnell</Authors>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageTags>Reprot</PackageTags>
+    <IsTool>true</IsTool>
+  
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+
+    <NuspecFile>Repro.Task.nuspec</NuspecFile>
+    <PackageVersion Condition="'$(PackageVersion)'==''">0.0.1-alpha0001</PackageVersion>
+    <NuspecProperties>Configuration=$(Configuration);version=$(PackageVersion)</NuspecProperties>
+    <MinClientVersion>2.5</MinClientVersion>
+  
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)'=='netcoreapp2.0'">
+    <DefineConstants>NETCOREAPP;APPDOMAIN;</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)'=='netcoreapp1.0'">
+    <DefineConstants>NETCOREAPP</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)'=='netstandard1.5'">
+    <DefineConstants>NETSTANDARD;</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)'=='net461' OR '$(TargetFramework)'=='net452'">
+    <DefineConstants>NETDESKTOP;APPDOMAIN;GETPROPERTIES;</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>     
+    <PackageReference Include="UtilPack.NuGet.MSBuild" Version="1.1.2" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='net461' OR '$(TargetFramework)'=='net452'">
+   
+    <Reference Include="System.IO.Compression"></Reference>
+    <Reference Include="WindowsBase"></Reference>
+    <PackageReference Include="Microsoft.Build.Framework" Version="14.3.0">
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="14.3.0">
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+   
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp2.0'">
+    <PackageReference Include="System.IO.Packaging" Version="4.4.0" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.3.409" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="15.3.409" />  
+  </ItemGroup>
+
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.5'">
+    <PackageReference Include="System.IO.Packaging" Version="4.4.0" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.3.409" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="15.3.409" /> 
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp1.0'">
+    <PackageReference Include="System.IO.Packaging" Version="4.4.0" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.3.409" />
+    <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.3.409" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="15.3.409" />  
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="build\Repro.Task.targets">
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <PackagePath>build\net45;build;</PackagePath>
+    </Content>
+  </ItemGroup> 
+
+
+  <PropertyGroup>
+    <!--<PostBuildEvent>"$(SolutionDir)..\tools\nuget.exe" pack "$(SolutionDir)DnnVsProjectSystem.BuildTools\DnnVsProjectSystem.BuildTools.nuspec" -Out "$(SolutionDir)..\assets" -Properties Configuration=$(Configuration)</PostBuildEvent>-->
+  </PropertyGroup>
+
+  <Target Name="CopyPackage" AfterTargets="Pack">
+    <Copy SourceFiles="$(OutputPath)$(PackageId).$(PackageVersion).nupkg" DestinationFolder="$(SolutionDir)\local-packages" />
+  </Target>
+</Project>

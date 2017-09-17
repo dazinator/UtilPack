@@ -2,3 +2,7 @@ Keys
 Source/UtilPack.NuGet.ProcessRunner/Properties/launchSettings.json
 bin
 obj
+/Source/local-packages/Repro.Task.0.0.1-alpha0001.nupkg
+/Source/.vs/UtilPack/v15
+/Source/Repro.TestProject/Repro.TestProject.csproj.user
+/Source/Repro.Task/Repro.Task.csproj.user
